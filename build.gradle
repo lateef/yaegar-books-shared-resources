@@ -2,3 +2,13 @@ group 'com.yaegar.books'
 version '1.0.0-SNAPSHOT'
 
 apply plugin: 'base'
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.4.1'
+}
+
+build {
+    dependsOn('stacks:genStacks')
+}
+
+clean.dependsOn('stacks:cleanStacks')
