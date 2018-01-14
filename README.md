@@ -1,1 +1,1 @@
-# yaegar-books-company-handler
+# yaegar-books-shared-resources
