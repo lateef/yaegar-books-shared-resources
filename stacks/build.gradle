@@ -1,0 +1,21 @@
+group 'com.yaegar.books'
+version '1.0.0-SNAPSHOT'
+
+task cleanStacks(type: Exec) {
+    group = "infrastructure"
+    description = "Cleans the Cloud Formation Stack build project"
+
+    commandLine '/usr/bin/make'
+    args 'clean'
+}
+
+task genStacks(type: Exec) {
+    commandLine '/usr/bin/make'
+}
+
+task applyStacks(type: Exec) {
+    commandLine '/usr/bin/make'
+    args 'apply-stacks', "ENV=$env"
+}
+
+

@@ -1,2 +1,3 @@
 rootProject.name = 'yaegar-books-shared-resources'
+include 'stacks'
 
