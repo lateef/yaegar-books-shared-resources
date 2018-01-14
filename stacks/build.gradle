@@ -15,7 +15,9 @@ task genStacks(type: Exec) {
 
 task applyStacks(type: Exec) {
     commandLine '/usr/bin/make'
-    args 'apply-stacks', "ENV=$env"
+    if (project.hasProperty("env")) {
+        args 'apply-stacks', "ENV=$env"
+    }
 }
 
 
