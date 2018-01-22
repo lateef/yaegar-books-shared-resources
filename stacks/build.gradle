@@ -11,12 +11,13 @@ task cleanStacks(type: Exec) {
 
 task genStacks(type: Exec) {
     commandLine '/usr/bin/make'
+    args "ENV=$env", "STACK=$stack"
 }
 
 task applyStacks(type: Exec) {
     commandLine '/usr/bin/make'
-    if (project.hasProperty("env")) {
-        args 'apply-stacks', "ENV=$env"
+    if (project.hasProperty("env") && project.hasProperty("stack") ) {
+        args 'apply-stacks', "ENV=$env", "STACK=$stack"
     }
 }
 
