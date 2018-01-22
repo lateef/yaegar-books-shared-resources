@@ -2,26 +2,26 @@
 
 # Get environment or exit with error message
 envs="Int Test Live"
-valid_opt=false
 
 usage () {
-	echo "Usage: './apply-stack.sh -e <target environment>'";
-	echo "Example './apply-stack.sh -e Int'";
+	echo "Usage: './apply-stack.sh -e <target environment> -s <stack>'";
+	echo "Example './apply-stack.sh -e Int -s shared-buckets'";
 	echo "Supported environments are ($envs)";
 	exit 1;
  }
 
-while getopts ":e:" opt; do
+while getopts ":e:s:" opt; do
 	case ${opt} in
 		e )
-			valid_opt=true;
-
 			if [[ ${envs} =~ (^|[[:space:]])$OPTARG($|[[:space:]]) ]]; then
 				env=$OPTARG;
 			else
 				echo "Invalid option argument: -$OPTARG" 1>&2;
 				usage;
 			fi
+		;;
+		s )
+			stack=$OPTARG;
 		;;
 		\? )
 			echo "Invalid Option: -$OPTARG" 1>&2
@@ -39,13 +39,14 @@ while getopts ":e:" opt; do
 done
 shift $((OPTIND -1))
 
-if [[ ${valid_opt} = false ]]; then
+if [[ -z ${env} || -z ${stack} ]]; then
 	echo "Missing argument";
 	usage;
 fi
 
 # Get stack name
 stack_name=$(jq ".${env}" stack_names.json | tr -d '"')
+stack_name=${stack//-/}${stack_name}
 
 stack_status=$(aws cloudformation list-stacks | jq '.StackSummaries[] |
 	select(.StackName=="'${stack_name}'" and .StackStatus != "DELETE_COMPLETE") |
@@ -57,11 +58,11 @@ if [[ ${stack_status} =~ "FAILED" ]]; then
 fi
 
 # Build the template
-make ENV=${env}
+make ENV=${env} STACK=${stack}
 
 stack_params="--stack-name ${stack_name}"
 
-template_path="--template-body file://build/${stack_name}.json --capabilities CAPABILITY_IAM"
+template_path="--template-body file://build/${stack_name}.json --capabilities CAPABILITY_IAM  --capabilities CAPABILITY_NAMED_IAM"
 
 if [[ '' == ${stack_status} ]]; then
 	# Create stack

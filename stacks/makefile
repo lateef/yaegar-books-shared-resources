@@ -1,6 +1,8 @@
 VENV_DIR ?= venv
 BUILD_DIR ?= build
 ENV ?= Int
+STACK = stack
+STACK_PREFIX = $(subst -,,${STACK})
 STACK_NAME ?= $(shell jq ".${ENV}" stack_names.json | tr -d '"')
 
 all: clean write-template
@@ -9,10 +11,10 @@ clean:
 	rm -fr $(BUILD_DIR)
 
 write-template: pep8
-	. $(VENV_DIR)/bin/activate && python src/shared-buckets.py ${ENV} > $(BUILD_DIR)/$(STACK_NAME).json
+	. $(VENV_DIR)/bin/activate && python src/${STACK}.py ${ENV} > $(BUILD_DIR)/${STACK_PREFIX}$(STACK_NAME).json
 
 pep8: venv create-build-dir
-	. $(VENV_DIR)/bin/activate && pep8 src/shared-buckets.py
+	. $(VENV_DIR)/bin/activate && pep8 src/${STACK}.py
 
 venv:
 	test -d $(VENV_DIR) || virtualenv $(VENV_DIR)
@@ -26,4 +28,4 @@ clean-venv:
 	rm -fr $(VENV_DIR)
 
 apply-stacks:
-	./apply-stacks.sh -e ${ENV}
+	./apply-stacks.sh -e ${ENV} -s ${STACK}
