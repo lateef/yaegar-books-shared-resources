@@ -90,7 +90,15 @@ cognitoUnAuthorizedRole = t.add_resource(
                 "Principal": {
                     "Federated": ["cognito-identity.amazonaws.com"]
                 },
-                "Action": ["sts:AssumeRole"]
+                "Action": ["sts:AssumeRoleWithWebIdentity"],
+                "Condition": {
+                    "StringEquals": {
+                        "cognito-identity.amazonaws.com:aud":  Ref(identityPool)
+                    },
+                    "ForAnyValue:StringLike": {
+                        "cognito-identity.amazonaws.com:amr": "unauthenticated"
+                    }
+                }
             }]
         },
         Policies=[
@@ -104,7 +112,7 @@ cognitoUnAuthorizedRole = t.add_resource(
                             "mobileanalytics:PutEvents",
                             "cognito-sync:*"
                         ],
-                        "Resource": "*"
+                        "Resource": ["*"]
                     }]
                 }
             )]
@@ -122,7 +130,15 @@ cognitoAuthorizedRole = t.add_resource(
                 "Principal": {
                     "Federated": ["cognito-identity.amazonaws.com"]
                 },
-                "Action": ["sts:AssumeRole"]
+                "Action": ["sts:AssumeRoleWithWebIdentity"],
+                "Condition": {
+                    "StringEquals": {
+                        "cognito-identity.amazonaws.com:aud": Ref(identityPool)
+                    },
+                    "ForAnyValue:StringLike": {
+                        "cognito-identity.amazonaws.com:amr": "authenticated"
+                    }
+                }
             }]
         },
         Policies=[
@@ -137,7 +153,7 @@ cognitoAuthorizedRole = t.add_resource(
                             "cognito-sync:*",
                             "cognito-identity:*"
                         ],
-                        "Resource": "*"
+                        "Resource": ["*"]
                     }]
                 }
             )]
