@@ -6,7 +6,7 @@ from troposphere.iam import Role, Policy
 
 env = sys.argv[1]
 
-COMPONENT_NAME = "YaegarBooksUserPool"
+COMPONENT_NAME = "YaegarBooksCognito"
 
 t = Template(COMPONENT_NAME)
 
@@ -14,10 +14,10 @@ t.add_version("2010-09-09")
 
 t.add_description(COMPONENT_NAME + " stacks for env " + env)
 
-userPool = t.add_resource(
+userPoolUsers = t.add_resource(
     UserPool(
-        "UserPoolYaegar",
-        UserPoolName="yaegaruserpool",
+        "UserPool" + COMPONENT_NAME + "Users",
+        UserPoolName="UserPool" + COMPONENT_NAME + "Users",
         AliasAttributes=["email"],
         Schema=[SchemaAttribute(
             Name="email",
@@ -41,39 +41,30 @@ userPool = t.add_resource(
         EmailVerificationMessage='''Welcome to YaegarBooks,
 Thanks for registering for a YaegarBooks account, please click the link to verify your email address. {####}
 
-If you have any questions, please contact our support team at: <email>
-
-                                                                Or call:
-
-<phone number> lines are open Monday to Friday, 9am to 5pm.
-    Account details:
-Account:
-Email:
-
 Welcome
 YaegarBooks''',
         EmailVerificationSubject="Your verification link"
     )
 )
 
-userPoolClient = t.add_resource(
+userPoolClientUsers = t.add_resource(
     UserPoolClient(
-        "UserPoolClientYaegarBooks",
-        ClientName="yaegarbooksappclient",
-        UserPoolId=Ref(userPool),
+        "UserPoolClient" + COMPONENT_NAME + "Users",
+        ClientName="UserPoolClient" + COMPONENT_NAME + "Users",
+        UserPoolId=Ref(userPoolUsers),
         GenerateSecret="False"
     )
 )
 
-identityPool = t.add_resource(
+identityPoolUsers = t.add_resource(
     IdentityPool(
-        "IdentityPoolYaegar",
-        IdentityPoolName="YaegarBooksIdentityPool",
+        "IdentityPool" + COMPONENT_NAME + "Users",
+        IdentityPoolName="IdentityPool" + COMPONENT_NAME + "Users",
         AllowUnauthenticatedIdentities=False,
         CognitoIdentityProviders=[
             CognitoIdentityProvider(
-                ClientId=Ref(userPoolClient),
-                ProviderName=GetAtt(userPool, "ProviderName")
+                ClientId=Ref(userPoolClientUsers),
+                ProviderName=GetAtt(userPoolUsers, "ProviderName")
             )
         ]
     )
@@ -93,7 +84,7 @@ cognitoUnAuthorizedRole = t.add_resource(
                 "Action": ["sts:AssumeRoleWithWebIdentity"],
                 "Condition": {
                     "StringEquals": {
-                        "cognito-identity.amazonaws.com:aud":  Ref(identityPool)
+                        "cognito-identity.amazonaws.com:aud":  Ref(identityPoolUsers)
                     },
                     "ForAnyValue:StringLike": {
                         "cognito-identity.amazonaws.com:amr": "unauthenticated"
@@ -133,7 +124,7 @@ cognitoAuthorizedRole = t.add_resource(
                 "Action": ["sts:AssumeRoleWithWebIdentity"],
                 "Condition": {
                     "StringEquals": {
-                        "cognito-identity.amazonaws.com:aud": Ref(identityPool)
+                        "cognito-identity.amazonaws.com:aud": Ref(identityPoolUsers)
                     },
                     "ForAnyValue:StringLike": {
                         "cognito-identity.amazonaws.com:amr": "authenticated"
@@ -163,7 +154,7 @@ cognitoAuthorizedRole = t.add_resource(
 identityPoolRoleAttachment = t.add_resource(
     IdentityPoolRoleAttachment(
         "IdentityPoolRoleAttachment",
-        IdentityPoolId=Ref(identityPool),
+        IdentityPoolId=Ref(identityPoolUsers),
         Roles={
             "authenticated": GetAtt(cognitoAuthorizedRole, "Arn"),
             "unauthenticated": GetAtt(cognitoUnAuthorizedRole, "Arn")
@@ -174,18 +165,18 @@ identityPoolRoleAttachment = t.add_resource(
 t.add_output([
     Output(
         "UserPoolArn",
-        Value=GetAtt(userPool, "Arn"),
-        Description="UserPool arn for Yaegar"
+        Value=GetAtt(userPoolUsers, "Arn"),
+        Description="UserPool arn for YaegarBooks"
     ),
     Output(
         "UserPoolClientId",
-        Value=Ref(userPoolClient),
-        Description="UserPoolClient id for Yaegar"
+        Value=Ref(userPoolClientUsers),
+        Description="UserPoolClient id for YaegarBooks"
     ),
     Output(
         "IdentityPoolId",
-        Value=Ref(identityPool),
-        Description="IdentityPool id for Yaegar"
+        Value=Ref(identityPoolUsers),
+        Description="IdentityPool id for YaegarBooks"
     )
 ])
 
