@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Get environment or exit with error message
-envs="Int Test Live"
+envs="Local Int Test Live"
 
 usage () {
 	echo "Usage: './apply-stack.sh -e <target environment> -s <stack>'";

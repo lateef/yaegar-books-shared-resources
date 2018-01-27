@@ -24,7 +24,13 @@ userPoolUsers = t.add_resource(
             AttributeDataType="String",
             Required="True",
             Mutable="True"
-        )],
+        ),
+            SchemaAttribute(
+                Name="setup_state",
+                AttributeDataType="String",
+                Required="False",
+                Mutable="True"
+            )],
         Policies=Policies(
             PasswordPolicy=PasswordPolicy(
                 MinimumLength=6,
@@ -84,7 +90,7 @@ cognitoUnAuthorizedRole = t.add_resource(
                 "Action": ["sts:AssumeRoleWithWebIdentity"],
                 "Condition": {
                     "StringEquals": {
-                        "cognito-identity.amazonaws.com:aud":  Ref(identityPoolUsers)
+                        "cognito-identity.amazonaws.com:aud": Ref(identityPoolUsers)
                     },
                     "ForAnyValue:StringLike": {
                         "cognito-identity.amazonaws.com:amr": "unauthenticated"
